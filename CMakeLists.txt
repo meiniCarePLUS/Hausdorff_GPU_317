@@ -59,7 +59,7 @@ CPMAddPackage(
 )
 CPMAddPackage(
     NAME "libigl"
-    GIT_REPOSITORY "https://github.com.cnpmjs.org/libigl/libigl.git"
+    GIT_REPOSITORY "https://github.com/libigl/libigl.git"
     GIT_TAG "v2.3.0"
     OPTIONS 
         "LIBIGL_USE_STATIC_LIBRARY OFF"
