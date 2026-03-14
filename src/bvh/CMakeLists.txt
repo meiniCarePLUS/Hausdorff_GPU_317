@@ -17,3 +17,13 @@ target_link_libraries(zycgeo_bvh zycgeo_core)
 target_include_directories(
     zycgeo_bvh PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+# GPU LBVH — separate CUDA library so the rest of the project stays C++.
+add_library(zycgeo_lbvh STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/lbvh.cu
+)
+set_target_properties(zycgeo_lbvh PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+)
+target_include_directories(zycgeo_lbvh PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(zycgeo_lbvh PRIVATE cudart)

@@ -16,8 +16,14 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 project(
   hausdorff
   VERSION 0.1.0
-  LANGUAGES CXX
+  LANGUAGES CXX CUDA
 )
+
+# CUDA settings
+set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+# Generate code for common GPU architectures; adjust for your hardware.
+set(CMAKE_CUDA_ARCHITECTURES 75 86 89)
 
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
   message(
