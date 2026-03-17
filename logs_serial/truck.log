@@ -1,0 +1,33 @@
+[mesh_0_num_of_vertices] 2956
+[mesh_0_num_of_faces] 4770
+./sample_data/model/truck-smooth.obj 4770 triangles
+[mesh_1_num_of_vertices] 2956
+[mesh_1_num_of_faces] 4770
+./sample_data/model/truck.obj 4770 triangles
+[rel_error_bound] 0.01
+[stop_condition] rel
+[bvh_build_cost] 124.677
+[culling rate] 0.969602
+
+
+########  calculation result  ########
+[first_travel_bound] 0.0517691 - 0.191119
+[distance] 0.0844287 - 0.0851307
+[max_point] 0.190714 0.0436123 -0.220862
+[mean_distance] 0.0847797
+
+
+########  performance summary  ########
+[first_travel_cost] 548.352
+[reduce_bound_cost] 85.9033
+[total_cost] 634.255
+[voronoi_count] 0
+[mid_subdivide_count] 283
+[total_subdivision_count] 283
+[point_triangle_distance_count] 142974
+[triangle_triangle_distance_count] 0
+
+
+########  reverse check  ########
+[reverse_check_result] 0.0844287
+[reverse_check_primitive_id] 2600

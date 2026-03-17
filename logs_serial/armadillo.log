@@ -1,0 +1,33 @@
+[mesh_0_num_of_vertices] 49990
+[mesh_0_num_of_faces] 99976
+./sample_data/model/armadillo-smooth.obj 99976 triangles
+[mesh_1_num_of_vertices] 49990
+[mesh_1_num_of_faces] 99976
+./sample_data/model/armadillo.obj 99976 triangles
+[rel_error_bound] 0.01
+[stop_condition] rel
+[bvh_build_cost] 3258.79
+[culling rate] 0.99833
+
+
+########  calculation result  ########
+[first_travel_bound] 0.397335 - 0.905313
+[distance] 0.416228 - 0.418862
+[max_point] 27.8248 -52.4208 -5.76053
+[mean_distance] 0.417545
+
+
+########  performance summary  ########
+[first_travel_cost] 9339.78
+[reduce_bound_cost] 6.43042
+[total_cost] 9346.21
+[voronoi_count] 0
+[mid_subdivide_count] 66
+[total_subdivision_count] 66
+[point_triangle_distance_count] 2798049
+[triangle_triangle_distance_count] 0
+
+
+########  reverse check  ########
+[reverse_check_result] 0.416228
+[reverse_check_primitive_id] 40338

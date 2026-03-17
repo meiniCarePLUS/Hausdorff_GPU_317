@@ -24,6 +24,7 @@
 #include "core/geometry/primitive_dis.hpp"
 #include "hausdorff.h"
 #include "hausdorff/closest_cache.hpp"
+#include "hausdorff/gpu_query_iface.hpp"
 #include "hausdorff_internal.h"
 #include "mesh/adjacent_table.hpp"
 
@@ -157,36 +158,76 @@ hausdorff_result hausdorff(tri_mesh &A, const tri_mesh &B,
 
     // while( ((!use_relative_error && (sqrt(U)-sqrt(L) > error)) || (use_relative_error && ((sqrt(U)-sqrt(L)) >= (sqrt(U)+sqrt(L))/2 * 0.01)))
     logs(cout) << "[culling rate] " << 1 - (trait->left_tris.size() * 1.0 / A.t_->size(2)) << std::endl;
+
+    // Batch size: process up to BATCH triangles per GPU round-trip.
+    // Larger batches amortize kernel launch overhead; smaller batches preserve
+    // priority-queue ordering. 8 is a good balance for typical meshes.
+    static const int BATCH = 8;
+
     while (!stop_condition(sqrt(L), sqrt(U)) && (!trait->left_tris.empty())) {
-        // std::cout << "count: " << voronoi_count + mid_count << std::endl;
-        primitive_with_hd pwhd = trait->left_tris.top();
-        trait->left_tris.pop();
-        U = trait->left_tris.top().U;
-
-        // skip primitive whose upper bound is lower than global lower bound
-        if (pwhd.U < L) {
-            // max point already found, exit
-            U = L;
-            break;
+        // Collect up to BATCH active triangles from the priority queue.
+        std::vector<primitive_with_hd> batch;
+        batch.reserve(BATCH);
+        while ((int)batch.size() < BATCH && !trait->left_tris.empty()) {
+            primitive_with_hd pwhd = trait->left_tris.top();
+            trait->left_tris.pop();
+            if (pwhd.U < L) { U = L; goto done; }
+            batch.push_back(pwhd);
         }
+        if (!trait->left_tris.empty()) U = trait->left_tris.top().U;
 
-        // subdivide triangle into four, and update model
-        primitive_t t[4];
+        // Subdivide all triangles in the batch.
+        std::vector<std::array<primitive_t,4>> sub(batch.size());
+        for (int b = 0; b < (int)batch.size(); ++b)
+            subdivide(A, trait->closest_cache_, adjacent_table, pbvh[1], B,
+                      batch[b].prim, use_voronoi, sub[b].data(), voronoi_count, mid_count);
 
-        subdivide(A, trait->closest_cache_, adjacent_table, pbvh[1], B, pwhd.prim, use_voronoi, t, voronoi_count, mid_count);
+        // Collect all cache-miss vertices across the entire batch for one GPU query.
+        {
+            // max 6 unique verts per triangle * BATCH triangles
+            std::vector<double> pts_buf;
+            std::vector<size_t> ids_buf;
+            pts_buf.reserve(BATCH * 6 * 3);
+            ids_buf.reserve(BATCH * 6);
 
-        // calculate local bound
-        // #pragma omp parallel for
-        for (size_t i = 0; i < 4; ++i) {
-            if ((trait->closest_cache_.get(t[i].point_id(0, 0)) == trait->closest_cache_.get(t[i].point_id(1, 0))) &&
-                (trait->closest_cache_.get(t[i].point_id(1, 0)) == trait->closest_cache_.get(t[i].point_id(2, 0)))) {
-                continue;
+            for (int b = 0; b < (int)batch.size(); ++b)
+                for (int ti = 0; ti < 4; ++ti)
+                    for (int vi = 0; vi < 3; ++vi) {
+                        size_t id = sub[b][ti].point_id(vi, 0);
+                        if (trait->closest_cache_.get(id) != nullptr) continue;
+                        bool dup = false;
+                        for (size_t j = 0; j < ids_buf.size(); ++j)
+                            if (ids_buf[j] == id) { dup = true; break; }
+                        if (dup) continue;
+                        ids_buf.push_back(id);
+                        pts_buf.push_back(sub[b][ti].points(0, vi));
+                        pts_buf.push_back(sub[b][ti].points(1, vi));
+                        pts_buf.push_back(sub[b][ti].points(2, vi));
+                    }
+
+            if (!ids_buf.empty()) {
+                std::vector<int> nearest_buf(ids_buf.size());
+                gpu_plain_query(pts_buf.data(), (int)ids_buf.size(), nearest_buf.data());
+                for (int j = 0; j < (int)ids_buf.size(); ++j)
+                    trait->closest_cache_.set(ids_buf[j],
+                        const_cast<primitive_t*>(&trait->tri_B_[nearest_buf[j]]));
             }
-            // std::cout << "travel child: " << i << std::endl;
-            trait->shrink_bound(t[i], pwhd.prim, *pbvh[1], L, U, pwhd.U, max_point);
         }
-        U = trait->left_tris.top().U;
+
+        // Compute local bounds for all sub-triangles.
+        for (int b = 0; b < (int)batch.size(); ++b)
+            for (size_t i = 0; i < 4; ++i) {
+                if ((trait->closest_cache_.get(sub[b][i].point_id(0,0)) ==
+                     trait->closest_cache_.get(sub[b][i].point_id(1,0))) &&
+                    (trait->closest_cache_.get(sub[b][i].point_id(1,0)) ==
+                     trait->closest_cache_.get(sub[b][i].point_id(2,0))))
+                    continue;
+                trait->shrink_bound(sub[b][i], batch[b].prim, *pbvh[1], L, U, batch[b].U, max_point);
+            }
+
+        if (!trait->left_tris.empty()) U = trait->left_tris.top().U;
     }
+    done:;
 
     end_clock = high_resolution_clock::now();
 

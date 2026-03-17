@@ -1,0 +1,33 @@
+[mesh_0_num_of_vertices] 6034
+[mesh_0_num_of_faces] 12064
+./sample_data/model/elephant-smooth.obj 12064 triangles
+[mesh_1_num_of_vertices] 6034
+[mesh_1_num_of_faces] 12064
+./sample_data/model/elephant.obj 12064 triangles
+[rel_error_bound] 0.01
+[stop_condition] rel
+[bvh_build_cost] 371.868
+
+
+
+########  calculation result  ########
+[first_travel_bound] 0.497151 - 1.85703
+[distance] 0.591601 - 0.597479
+[max_point] 20.487 44.1603 6.35975
+[mean_distance] 0.59454
+
+
+########  performance summary  ########
+[first_travel_cost] 980.6
+[reduce_bound_cost] 311.862
+[total_cost] 1292.46
+[voronoi_count] 0
+[mid_subdivide_count] 3854
+[total_subdivision_count] 3854
+[point_triangle_distance_count] 423460
+[triangle_triangle_distance_count] 0
+
+
+########  reverse check  ########
+[reverse_check_result] 0.591601
+[reverse_check_primitive_id] 9730

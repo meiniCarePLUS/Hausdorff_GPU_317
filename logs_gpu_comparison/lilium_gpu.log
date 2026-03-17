@@ -1,0 +1,35 @@
+# [info] vertex 3389 face 6590
+[mesh_0_num_of_vertices] 3389
+[mesh_0_num_of_faces] 6590
+./sample_data/model/lilium-smooth.obj 6590 triangles
+# [info] vertex 3389 face 6590
+[mesh_1_num_of_vertices] 3389
+[mesh_1_num_of_faces] 6590
+./sample_data/model/lilium.obj 6590 triangles
+[rel_error_bound] 0.01
+[stop_condition] rel
+[bvh_build_cost] 190.146
+[culling rate] 0.909105
+
+
+########  calculation result  ########
+[first_travel_bound] 0.0038604 - 0.00870301
+[distance] 0.00424218 - 0.00427931
+[max_point] 0.514219 0.897896 -0.396193
+[mean_distance] 0.00426074
+
+
+########  performance summary  ########
+[first_travel_cost] 43.3671
+[reduce_bound_cost] 10.1345
+[total_cost] 53.5016
+[voronoi_count] 0
+[mid_subdivide_count] 1852
+[total_subdivision_count] 1852
+[point_triangle_distance_count] 193579
+[triangle_triangle_distance_count] 0
+
+
+########  reverse check  ########
+[reverse_check_result] 0.00424218
+[reverse_check_primitive_id] 3043

@@ -1,0 +1,33 @@
+[mesh_0_num_of_vertices] 72027
+[mesh_0_num_of_faces] 144046
+./sample_data/model/bunny-smooth2.obj 144046 triangles
+[mesh_1_num_of_vertices] 72027
+[mesh_1_num_of_faces] 144046
+./sample_data/model/bunny.obj 144046 triangles
+[rel_error_bound] 0.01
+[stop_condition] rel
+[bvh_build_cost] 4742.84
+[culling rate] 0.998917
+
+
+########  calculation result  ########
+[first_travel_bound] 0.00357902 - 0.0037298
+[distance] 0.00366601 - 0.00368785
+[max_point] -0.661883 1.58694 -0.51527
+[mean_distance] 0.00367693
+
+
+########  performance summary  ########
+[first_travel_cost] 12000.5
+[reduce_bound_cost] 3.36877
+[total_cost] 12003.8
+[voronoi_count] 0
+[mid_subdivide_count] 45
+[total_subdivision_count] 45
+[point_triangle_distance_count] 3601700
+[triangle_triangle_distance_count] 0
+
+
+########  reverse check  ########
+[reverse_check_result] 0.00366601
+[reverse_check_primitive_id] 253

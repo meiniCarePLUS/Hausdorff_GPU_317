@@ -1,0 +1,33 @@
+[mesh_0_num_of_vertices] 2244
+[mesh_0_num_of_faces] 4288
+./sample_data/model/inspired_mesh-smooth.obj 4288 triangles
+[mesh_1_num_of_vertices] 2244
+[mesh_1_num_of_faces] 4288
+./sample_data/model/inspired_mesh.obj 4288 triangles
+[rel_error_bound] 0.01
+[stop_condition] rel
+[bvh_build_cost] 119.076
+[culling rate] 0.594683
+
+
+########  calculation result  ########
+[first_travel_bound] 0.0185456 - 0.0390541
+[distance] 0.0197254 - 0.0199222
+[max_point] 22.5852 3.00468 5.2327
+[mean_distance] 0.0198238
+
+
+########  performance summary  ########
+[first_travel_cost] 279.187
+[reduce_bound_cost] 5402.58
+[total_cost] 5681.77
+[voronoi_count] 0
+[mid_subdivide_count] 95390
+[total_subdivision_count] 95390
+[point_triangle_distance_count] 2030565
+[triangle_triangle_distance_count] 0
+
+
+########  reverse check  ########
+[reverse_check_result] 0.0197254
+[reverse_check_primitive_id] 1977

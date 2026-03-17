@@ -1,0 +1,3 @@
+[mesh_0_num_of_vertices] 0
+[mesh_0_num_of_faces] 0
+[Error] ./sample_data/model/beast-smooth.obj cannot be parsed or is with 0 face.

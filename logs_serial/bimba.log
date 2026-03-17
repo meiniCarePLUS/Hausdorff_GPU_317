@@ -1,0 +1,33 @@
+[mesh_0_num_of_vertices] 112455
+[mesh_0_num_of_faces] 224906
+./sample_data/model/bimba-smooth.obj 224906 triangles
+[mesh_1_num_of_vertices] 112455
+[mesh_1_num_of_faces] 224906
+./sample_data/model/bimba.obj 224906 triangles
+[rel_error_bound] 0.01
+[stop_condition] rel
+[bvh_build_cost] 6054.33
+
+
+
+########  calculation result  ########
+[first_travel_bound] 0.000505164 - 0.00140061
+[distance] 0.000526484 - 0.000530986
+[max_point] -0.0845112 -0.0296215 -1.14664
+[mean_distance] 0.000528735
+
+
+########  performance summary  ########
+[first_travel_cost] 20138.9
+[reduce_bound_cost] 22.8871
+[total_cost] 20161.8
+[voronoi_count] 0
+[mid_subdivide_count] 210
+[total_subdivision_count] 210
+[point_triangle_distance_count] 6150829
+[triangle_triangle_distance_count] 0
+
+
+########  reverse check  ########
+[reverse_check_result] 0.000526484
+[reverse_check_primitive_id] 3254

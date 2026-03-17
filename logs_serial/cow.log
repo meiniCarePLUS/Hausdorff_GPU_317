@@ -1,0 +1,33 @@
+[mesh_0_num_of_vertices] 2903
+[mesh_0_num_of_faces] 5804
+./sample_data/model/cow-smooth.obj 5804 triangles
+[mesh_1_num_of_vertices] 2903
+[mesh_1_num_of_faces] 5804
+./sample_data/model/cow.obj 5804 triangles
+[rel_error_bound] 0.01
+[stop_condition] rel
+[bvh_build_cost] 153.188
+
+
+
+########  calculation result  ########
+[first_travel_bound] 0.161496 - 0.271939
+[distance] 0.162669 - 0.16358
+[max_point] -1.0106 -0.356512 -1.52781
+[mean_distance] 0.163125
+
+
+########  performance summary  ########
+[first_travel_cost] 368.438
+[reduce_bound_cost] 8.3366
+[total_cost] 376.775
+[voronoi_count] 0
+[mid_subdivide_count] 62
+[total_subdivision_count] 62
+[point_triangle_distance_count] 111419
+[triangle_triangle_distance_count] 0
+
+
+########  reverse check  ########
+[reverse_check_result] 0.162669
+[reverse_check_primitive_id] 1854

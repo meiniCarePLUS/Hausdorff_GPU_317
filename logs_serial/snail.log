@@ -1,0 +1,33 @@
+[mesh_0_num_of_vertices] 871
+[mesh_0_num_of_faces] 1653
+./sample_data/model/snail-smooth.obj 1653 triangles
+[mesh_1_num_of_vertices] 871
+[mesh_1_num_of_faces] 1653
+./sample_data/model/snail.obj 1653 triangles
+[rel_error_bound] 0.01
+[stop_condition] rel
+[bvh_build_cost] 42.4235
+[culling rate] 0.885057
+
+
+########  calculation result  ########
+[first_travel_bound] 0.0108395 - 0.039445
+[distance] 0.0120305 - 0.0121504
+[max_point] 1.79249 -0.104153 -0.681471
+[mean_distance] 0.0120904
+
+
+########  performance summary  ########
+[first_travel_cost] 124.331
+[reduce_bound_cost] 100.25
+[total_cost] 224.581
+[voronoi_count] 0
+[mid_subdivide_count] 1431
+[total_subdivision_count] 1431
+[point_triangle_distance_count] 78493
+[triangle_triangle_distance_count] 0
+
+
+########  reverse check  ########
+[reverse_check_result] 0.0120305
+[reverse_check_primitive_id] 1639

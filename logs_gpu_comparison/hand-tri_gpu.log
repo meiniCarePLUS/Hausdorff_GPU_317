@@ -1,0 +1,35 @@
+# [info] vertex 1775 face 3426
+[mesh_0_num_of_vertices] 1775
+[mesh_0_num_of_faces] 3426
+./sample_data/model/hand-tri-smooth.obj 3426 triangles
+# [info] vertex 1775 face 3426
+[mesh_1_num_of_vertices] 1775
+[mesh_1_num_of_faces] 3426
+./sample_data/model/hand-tri.obj 3426 triangles
+[rel_error_bound] 0.01
+[stop_condition] rel
+[bvh_build_cost] 199.111
+[culling rate] 0.987741
+
+
+########  calculation result  ########
+[first_travel_bound] 3.01976 - 3.33449
+[distance] 3.10234 - 3.12041
+[max_point] -81.315 34.1662 0.867135
+[mean_distance] 3.11137
+
+
+########  performance summary  ########
+[first_travel_cost] 33.3694
+[reduce_bound_cost] 0.8145
+[total_cost] 34.1839
+[voronoi_count] 0
+[mid_subdivide_count] 88
+[total_subdivision_count] 88
+[point_triangle_distance_count] 106999
+[triangle_triangle_distance_count] 0
+
+
+########  reverse check  ########
+[reverse_check_result] 3.10234
+[reverse_check_primitive_id] 1077

@@ -1,0 +1,35 @@
+# [info] vertex 8311 face 16618
+[mesh_0_num_of_vertices] 8311
+[mesh_0_num_of_faces] 16618
+./sample_data/model/arm-smooth.obj 16618 triangles
+# [info] vertex 8311 face 16618
+[mesh_1_num_of_vertices] 8311
+[mesh_1_num_of_faces] 16618
+./sample_data/model/arm.obj 16618 triangles
+[rel_error_bound] 0.01
+[stop_condition] rel
+[bvh_build_cost] 311.59
+[culling rate] 0.909917
+
+
+########  calculation result  ########
+[first_travel_bound] 0.00281853 - 0.0101161
+[distance] 0.00344738 - 0.00348171
+[max_point] -0.679226 -0.0448067 -0.108609
+[mean_distance] 0.00346454
+
+
+########  performance summary  ########
+[first_travel_cost] 89.6661
+[reduce_bound_cost] 11.3619
+[total_cost] 101.028
+[voronoi_count] 0
+[mid_subdivide_count] 2225
+[total_subdivision_count] 2225
+[point_triangle_distance_count] 501806
+[triangle_triangle_distance_count] 0
+
+
+########  reverse check  ########
+[reverse_check_result] 0.00344738
+[reverse_check_primitive_id] 393
