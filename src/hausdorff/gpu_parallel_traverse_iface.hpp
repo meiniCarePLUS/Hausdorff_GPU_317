@@ -9,6 +9,7 @@ struct CandidateTriangle {
     int tri_idx;
     double local_L;
     double local_U;
+    float vertices[9];  // 三角形的3个顶点坐标 [v0x,v0y,v0z, v1x,v1y,v1z, v2x,v2y,v2z]
 };
 
 // GPU parallel traverse interface (C++ compatible, no CUDA headers)

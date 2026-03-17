@@ -159,7 +159,8 @@ __global__ void kernel_parallel_traverse_level(
     int* __restrict__ output_count,
     CandidateTriangle* __restrict__ candidates,
     int* __restrict__ candidate_count,
-    TraversalState* __restrict__ state)
+    TraversalState* __restrict__ state,
+    int max_candidates)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= input_count) return;
@@ -233,7 +234,7 @@ __global__ void kernel_parallel_traverse_level(
         // 如果local_U > global_L，加入候选队列
         if (local_U > global_L) {
             int cand_idx = atomicAdd(candidate_count, 1);
-            if (cand_idx < 1000000) {  // 防止溢出
+            if (cand_idx < max_candidates) {  // 防止溢出
                 candidates[cand_idx].tri_idx = tri_idx;
                 candidates[cand_idx].local_L = local_U;  // 简化：L=U
                 candidates[cand_idx].local_U = local_U;
@@ -302,8 +303,9 @@ void gpu_parallel_traverse(
     h_state.candidate_count = 0;
     cudaMemcpy(d_state, &h_state, sizeof(TraversalState), cudaMemcpyHostToDevice);
 
-    // 分配候选三角形缓冲区（预估最多nA个）
-    cudaMalloc(d_candidates, nA * sizeof(CandidateTriangle));
+    // 分配候选三角形缓冲区（预估最多nA个，但为安全起见分配2倍空间）
+    const int MAX_CANDIDATES = nA * 2;
+    cudaMalloc(d_candidates, MAX_CANDIDATES * sizeof(CandidateTriangle));
     int* d_candidate_count;
     cudaMalloc(&d_candidate_count, sizeof(int));
     cudaMemset(d_candidate_count, 0, sizeof(int));
@@ -356,7 +358,8 @@ void gpu_parallel_traverse(
             d_pair_count[1 - current],
             *d_candidates,
             d_candidate_count,
-            d_state);
+            d_state,
+            MAX_CANDIDATES);
 
         cudaDeviceSynchronize();
 
@@ -397,7 +400,10 @@ void gpu_parallel_traverse_copy_candidates(
     const CandidateTriangle* d_candidates,
     CandidateTriangle* h_candidates,
     int count) {
-    cudaMemcpy(h_candidates, d_candidates,
+    cudaError_t err = cudaMemcpy(h_candidates, d_candidates,
                count * sizeof(CandidateTriangle),
                cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess) {
+        printf("[GPU_TRAVERSE_ERROR] cudaMemcpy failed: %s\n", cudaGetErrorString(err));
+    }
 }

@@ -30,7 +30,8 @@
 #include "mesh/adjacent_table.hpp"
 
 // Enable GPU parallel traverse (set to 1 to use GPU, 0 to use CPU)
-#define USE_GPU_TRAVERSE 1
+// NOTE: GPU traverse currently has correctness issues, use CPU for now
+#define USE_GPU_TRAVERSE 0
 
 using namespace std;
 using namespace zjucad::matrix;
@@ -167,10 +168,20 @@ hausdorff_result hausdorff(tri_mesh &A, const tri_mesh &B,
                    << ", L=" << sqrt(L) << ", U=" << sqrt(U) << std::endl;
 
         // 将候选三角形加入优先队列
-        if (candidate_count > 0) {
-            std::vector<CandidateTriangle> h_candidates(candidate_count);
-            gpu_parallel_traverse_copy_candidates(d_candidates, h_candidates.data(), candidate_count);
+        if (candidate_count > 0 && d_candidates != nullptr) {
+            logs(cout) << "[GPU_TRAVERSE] Copying " << candidate_count << " candidates from device to host..." << std::endl;
+            logs(cout) << "[GPU_TRAVERSE] Candidate size: " << sizeof(CandidateTriangle) << " bytes" << std::endl;
+            logs(cout) << "[GPU_TRAVERSE] Total memory: " << (candidate_count * sizeof(CandidateTriangle)) << " bytes" << std::endl;
 
+            std::vector<CandidateTriangle> h_candidates(candidate_count);
+            logs(cout) << "[GPU_TRAVERSE] Host vector allocated" << std::endl;
+
+            gpu_parallel_traverse_copy_candidates(d_candidates, h_candidates.data(), candidate_count);
+            logs(cout) << "[GPU_TRAVERSE] Copy completed" << std::endl;
+
+            logs(cout) << "[GPU_TRAVERSE] tri_A_.size() = " << trait->tri_A_.size() << std::endl;
+
+            int added_count = 0;
             for (int i = 0; i < candidate_count; ++i) {
                 int tri_idx = h_candidates[i].tri_idx;
                 if (tri_idx >= 0 && tri_idx < (int)trait->tri_A_.size()) {
@@ -178,11 +189,15 @@ hausdorff_result hausdorff(tri_mesh &A, const tri_mesh &B,
                         trait->tri_A_[tri_idx],
                         h_candidates[i].local_L,
                         h_candidates[i].local_U));
+                    added_count++;
                 }
             }
+            logs(cout) << "[GPU_TRAVERSE] Added " << added_count << " candidates to queue" << std::endl;
         }
 
-        gpu_parallel_traverse_free(d_candidates);
+        if (d_candidates != nullptr) {
+            gpu_parallel_traverse_free(d_candidates);
+        }
     } else {
         logs(cout) << "[CPU_TRAVERSE] Using CPU serial BVH traversal" << std::endl;
         traverse(*pbvh[0], *pbvh[1], L, U, trait, max_point);
