@@ -24,6 +24,7 @@ add_library(zycgeo_lbvh STATIC
 )
 set_target_properties(zycgeo_lbvh PROPERTIES
     CUDA_SEPARABLE_COMPILATION ON
+    CUDA_RESOLVE_DEVICE_SYMBOLS ON
 )
 target_include_directories(zycgeo_lbvh PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(zycgeo_lbvh PRIVATE cudart)

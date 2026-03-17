@@ -99,3 +99,50 @@ void LBVH::free() {
     cudaFree(d_sorted_idx); d_sorted_idx = nullptr;
     cudaFree(d_morton);     d_morton     = nullptr;
 }
+
+// C++ interface functions
+LBVH* lbvh_build_from_mesh(const double* vertices, int num_verts,
+                           const int* triangles, int num_tris) {
+    // Convert mesh to float3x3 triangles
+    std::vector<float3x3> h_tris(num_tris);
+    for (int i = 0; i < num_tris; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            int vid = triangles[i * 3 + j];
+            h_tris[i].v[j * 3 + 0] = (float)vertices[vid * 3 + 0];
+            h_tris[i].v[j * 3 + 1] = (float)vertices[vid * 3 + 1];
+            h_tris[i].v[j * 3 + 2] = (float)vertices[vid * 3 + 2];
+        }
+    }
+    LBVH* lbvh = new LBVH();
+    lbvh->build(h_tris.data(), num_tris);
+    return lbvh;
+}
+
+void lbvh_free(LBVH* lbvh) {
+    if (lbvh) {
+        lbvh->free();
+        delete lbvh;
+    }
+}
+
+void mesh_to_gpu_triangles(const double* vertices, const int* triangles,
+                          int num_tris, float3x3** d_tris_out) {
+    // Convert to float3x3 on host
+    std::vector<float3x3> h_tris(num_tris);
+    for (int i = 0; i < num_tris; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            int vid = triangles[i * 3 + j];
+            h_tris[i].v[j * 3 + 0] = (float)vertices[vid * 3 + 0];
+            h_tris[i].v[j * 3 + 1] = (float)vertices[vid * 3 + 1];
+            h_tris[i].v[j * 3 + 2] = (float)vertices[vid * 3 + 2];
+        }
+    }
+
+    // Copy to device
+    cudaMalloc(d_tris_out, num_tris * sizeof(float3x3));
+    cudaMemcpy(*d_tris_out, h_tris.data(), num_tris * sizeof(float3x3), cudaMemcpyHostToDevice);
+}
+
+void free_gpu_triangles(float3x3* d_tris) {
+    cudaFree(d_tris);
+}

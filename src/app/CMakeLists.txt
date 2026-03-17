@@ -11,7 +11,11 @@
 #	Licensed under the MIT License.
 
 add_executable(hausdorff main.cpp)
-target_link_libraries(hausdorff zycgeo_hausdorff zjucad::matrix meshio cxxopts zycgeo_gpu_bounds zycgeo_lbvh cudart)
+set_target_properties(hausdorff PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+    CUDA_RESOLVE_DEVICE_SYMBOLS ON
+)
+target_link_libraries(hausdorff zycgeo_hausdorff zjucad::matrix meshio cxxopts zycgeo_gpu_bounds zycgeo_lbvh cudart cudadevrt)
 target_include_directories(hausdorff PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 add_executable(test_lbvh test_lbvh.cu)
@@ -25,3 +29,7 @@ target_include_directories(test_gpu_hausdorff PRIVATE ${CMAKE_SOURCE_DIR}/src)
 add_executable(test_initial_bounds test_initial_bounds.cu)
 target_link_libraries(test_initial_bounds zycgeo_gpu_bounds zycgeo_lbvh cudart)
 target_include_directories(test_initial_bounds PRIVATE ${CMAKE_SOURCE_DIR}/src)
+
+add_executable(test_parallel_traverse test_parallel_traverse.cu)
+target_link_libraries(test_parallel_traverse zycgeo_gpu_bounds zycgeo_lbvh cudart)
+target_include_directories(test_parallel_traverse PRIVATE ${CMAKE_SOURCE_DIR}/src)

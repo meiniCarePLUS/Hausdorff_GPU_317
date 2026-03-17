@@ -58,17 +58,27 @@ public:
     size_t midpoint_subdivision_count;
 };
 
+// Forward declaration for LBVH
+struct LBVH;
+struct float3x3;
+
 // calculate hausdorff distance from mesh A to mesh B
 // input:
 //   A: mesh A
 //   B: mesh B
 //   error: squared error tolerance between upper and lower bounds
 //   hd_trait: the method used in hausdorff distance calculation
+//   lbvh_A, lbvh_B: GPU LBVH trees (optional, for GPU traverse)
+//   d_tris_A, d_tris_B: GPU triangle data (optional, for GPU traverse)
 hausdorff_result hausdorff(tri_mesh &A,
                            const tri_mesh &B,
                            std::shared_ptr<bvh> pbvh[2],
                            std::unique_ptr<hd_trait> &hd_trait,
-                           bool use_voronoi, std::function<bool(double, double)> &stop_condition);
+                           bool use_voronoi, std::function<bool(double, double)> &stop_condition,
+                           const LBVH* lbvh_A = nullptr,
+                           const LBVH* lbvh_B = nullptr,
+                           const float3x3* d_tris_A = nullptr,
+                           const float3x3* d_tris_B = nullptr);
 
 // structure to store local hausdorff distance bound for single primitive
 struct primitive_with_hd {

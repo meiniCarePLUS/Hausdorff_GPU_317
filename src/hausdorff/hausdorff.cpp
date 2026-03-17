@@ -25,8 +25,12 @@
 #include "hausdorff.h"
 #include "hausdorff/closest_cache.hpp"
 #include "hausdorff/gpu_query_iface.hpp"
+#include "hausdorff/gpu_parallel_traverse_iface.hpp"
 #include "hausdorff_internal.h"
 #include "mesh/adjacent_table.hpp"
+
+// Enable GPU parallel traverse (set to 1 to use GPU, 0 to use CPU)
+#define USE_GPU_TRAVERSE 1
 
 using namespace std;
 using namespace zjucad::matrix;
@@ -128,7 +132,11 @@ void subdivide(tri_mesh &A,
 
 hausdorff_result hausdorff(tri_mesh &A, const tri_mesh &B,
                            shared_ptr<bvh> pbvh[2], unique_ptr<hd_trait> &trait,
-                           bool use_voronoi, function<bool(double, double)> &stop_condition) {
+                           bool use_voronoi, function<bool(double, double)> &stop_condition,
+                           const LBVH* lbvh_A,
+                           const LBVH* lbvh_B,
+                           const float3x3* d_tris_A,
+                           const float3x3* d_tris_B) {
     // build primitive adjacent table
     primitive_adjacent_table adjacent_table;
     build_primitive_adjacent_table_from_mesh(*B.v_, *B.t_, adjacent_table);
@@ -138,7 +146,52 @@ hausdorff_result hausdorff(tri_mesh &A, const tri_mesh &B,
     double L = 0, U = std::numeric_limits<double>::max();
 
     point_t max_point = ones<double>(3, 1);
+
+#if USE_GPU_TRAVERSE
+    // Use GPU parallel traverse if LBVH data is available
+    if (lbvh_A && lbvh_B && d_tris_A && d_tris_B) {
+        logs(cout) << "[GPU_TRAVERSE] Using GPU parallel BVH traversal" << std::endl;
+
+        CandidateTriangle* d_candidates = nullptr;
+        int candidate_count = 0;
+
+        gpu_parallel_traverse(
+            *lbvh_A, *lbvh_B,
+            d_tris_A, d_tris_B,
+            A.t_->size(2), B.t_->size(2),
+            &d_candidates,
+            &candidate_count,
+            &L, &U);
+
+        logs(cout) << "[GPU_TRAVERSE] Candidates: " << candidate_count
+                   << ", L=" << sqrt(L) << ", U=" << sqrt(U) << std::endl;
+
+        // 将候选三角形加入优先队列
+        if (candidate_count > 0) {
+            std::vector<CandidateTriangle> h_candidates(candidate_count);
+            gpu_parallel_traverse_copy_candidates(d_candidates, h_candidates.data(), candidate_count);
+
+            for (int i = 0; i < candidate_count; ++i) {
+                int tri_idx = h_candidates[i].tri_idx;
+                if (tri_idx >= 0 && tri_idx < (int)trait->tri_A_.size()) {
+                    trait->left_tris.push(primitive_with_hd(
+                        trait->tri_A_[tri_idx],
+                        h_candidates[i].local_L,
+                        h_candidates[i].local_U));
+                }
+            }
+        }
+
+        gpu_parallel_traverse_free(d_candidates);
+    } else {
+        logs(cout) << "[CPU_TRAVERSE] Using CPU serial BVH traversal" << std::endl;
+        traverse(*pbvh[0], *pbvh[1], L, U, trait, max_point);
+    }
+#else
+    // Use CPU traverse
+    logs(cout) << "[CPU_TRAVERSE] Using CPU serial BVH traversal" << std::endl;
     traverse(*pbvh[0], *pbvh[1], L, U, trait, max_point);
+#endif
 
     // TODO: design a class for more convinient time measure: void
     // clock.start(), double clock.stop() returns the milisecond since

@@ -19,6 +19,7 @@
 #include <io/io.h>
 
 #include "bvh/bvh.h"
+#include "bvh/lbvh_iface.hpp"
 #include "core/geometry/bbox.hpp"
 #include "hausdorff/hausdorff.h"
 #include "hausdorff/gpu_query_iface.hpp"
@@ -147,14 +148,35 @@ int main(int argc, char **argv) // parse arguments and call Hausdorff
         pbvh[m]->build_bvh(&tris[m][0], &tris[m][0] + tris[m].size());
     }
 
-    // Build GPU LBVH for mesh B (reuse tris[1] data already computed above).
+    // Build GPU LBVH for both meshes A and B
+    LBVH *lbvh_A = nullptr, *lbvh_B = nullptr;
+    float3x3 *d_tris_A = nullptr, *d_tris_B = nullptr;
     {
+        // Build LBVH for mesh A
+        size_t nA = t[0].size(2);
+        std::vector<double> a_verts(v[0].size());
+        std::vector<int> a_tris(t[0].size());
+        for (size_t i = 0; i < v[0].size(); ++i)
+            a_verts[i] = v[0][i];
+        for (size_t i = 0; i < t[0].size(); ++i)
+            a_tris[i] = t[0][i];
+
+        lbvh_A = lbvh_build_from_mesh(a_verts.data(), v[0].size(2), a_tris.data(), (int)nA);
+        mesh_to_gpu_triangles(a_verts.data(), a_tris.data(), (int)nA, &d_tris_A);
+
+        // Build LBVH for mesh B
         size_t nB = t[1].size(2);
-        std::vector<double> b_verts(nB * 9);
-        for (size_t ti = 0; ti < nB; ++ti)
-            for (size_t vi = 0; vi < 3; ++vi)
-                for (size_t d = 0; d < 3; ++d)
-                    b_verts[ti*9 + vi*3 + d] = v[1](d, t[1](vi, ti));
+        std::vector<double> b_verts(v[1].size());
+        std::vector<int> b_tris(t[1].size());
+        for (size_t i = 0; i < v[1].size(); ++i)
+            b_verts[i] = v[1][i];
+        for (size_t i = 0; i < t[1].size(); ++i)
+            b_tris[i] = t[1][i];
+
+        lbvh_B = lbvh_build_from_mesh(b_verts.data(), v[1].size(2), b_tris.data(), (int)nB);
+        mesh_to_gpu_triangles(b_verts.data(), b_tris.data(), (int)nB, &d_tris_B);
+
+        // Also initialize the old GPU query interface
         gpu_plain_init_B(b_verts.data(), (int)nB);
     }
 
@@ -190,9 +212,15 @@ int main(int argc, char **argv) // parse arguments and call Hausdorff
     }
 
     hausdorff_result hd_result =
-        hausdorff(A, B, pbvh, trait, use_voronoi, stop_condition);
+        hausdorff(A, B, pbvh, trait, use_voronoi, stop_condition,
+                  lbvh_A, lbvh_B, d_tris_A, d_tris_B);
 
+    // Cleanup GPU resources
     gpu_plain_free_B();
+    lbvh_free(lbvh_A);
+    lbvh_free(lbvh_B);
+    free_gpu_triangles(d_tris_A);
+    free_gpu_triangles(d_tris_B);
 
     std::cout << std::endl
               << std::endl;
